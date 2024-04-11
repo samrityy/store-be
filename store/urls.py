@@ -8,10 +8,10 @@ from user.views import CartViewSet
 router=DefaultRouter()
 router.register(r'products',ProductViewSet, basename='products')
 router.register(r'cart',CartViewSet, basename='cart')
-urlatterns=router.urls
+urlpatterns=router.urls
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(urlatterns)),
+    path('', include(urlpatterns)),
     path('user/', include('user.urls')),
 
 ]
