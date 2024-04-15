@@ -1,12 +1,15 @@
+from rest_framework import permissions, viewsets
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import CustomUser,Cart
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework import viewsets
-from rest_framework.authentication import TokenAuthentication
+from django.contrib.auth import logout
 
-from .serializer import UserSerializer, CartSerializer
+from .models import Cart, CustomUser
+from .serializer import CartSerializer, UserSerializer
+
+
 class RegisterView(APIView):
     def post(self,request):
         serializer=UserSerializer(data=request.data)
@@ -26,9 +29,14 @@ class LoginView(APIView):
             raise AuthenticationFailed('Incorrect password')
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token':token.key})
-        
+class LogoutView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
+    def post(self, request):
+        logout(request)
+        return Response({'message': 'Logout successful'})
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
