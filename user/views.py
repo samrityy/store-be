@@ -47,36 +47,32 @@ class LogoutView(APIView):
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False, methods=["POST"], url_path="add-to-cart")
     def add_to_cart(self, request):
         user = request.user
+        # import ipdb; ipdb.set_trace()
         validate = CartSerializer(data=request.data)
-        is_valid = validate.is_valid()
-        if not is_valid:
-            return Response(validate.errors)
-        # if validate.is_valid():
-        #     cart = Cart.objects.get_or_create(user=user)
-        #     product = Product.objects.get(pk=request.data.get("product_id"))
-        #     cart_line = CartLine.objects.create(product=product, cart=cart, quantity=request.data.get("quantity", 1))
-        #     return Response({"message": "Product added to cart"})
+        # is_valid = validate.is_valid()
+        # if not is_valid:
+            # return Response(validate.errors)
         product_id = request.data.get("product_id")
-        quantity = request.data.get("quantity", 1)
+        quantity = request.data.get("quantity",1)
         product = Product.objects.get(pk=product_id)
         cart = Cart.objects.get_or_create(user=user)[0]
-        # import ipdb; ipdb.set_trace()
+        
         cart_line_qs = user.cart.cart_lines.filter(product=product)
         if cart_line_qs.exists():
             cart_line = cart_line_qs.first()
             cart_line.quantity += quantity
             cart_line.save()
         else:
+
             cart_line = CartLine.objects.create(
                 product=product, cart=cart, quantity=quantity
             )
-        import ipdb
-
-        ipdb.set_trace()
         return Response({"message": "Product added to cart"})
+
+    # @action(detail=False, methods=["GET"], url_path="get-from-cart")
