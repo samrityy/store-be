@@ -33,11 +33,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     product_id = serializers.PrimaryKeyRelatedField(
-        read_only=True
+        read_only=True,source='product'
     )
     quantity = serializers.IntegerField(default=1)
 
     class Meta:
         model = CartLine
-        fields = ["product_id", "quantity","product"]
+        fields = ["product_id", "quantity"]
 

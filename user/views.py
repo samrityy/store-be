@@ -7,6 +7,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from product.serializer import ProductSerializer
+
 from .models import Cart, CartLine, CustomUser, Product
 from .serializer import CartSerializer, UserSerializer
 
@@ -49,7 +51,28 @@ class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [permissions.IsAuthenticated]
+    @action(detail=False, methods=["GET"], url_path="get-from-cart")
+    # def get_from_cart(self, request):
+    #     user = request.user
+    #     cart = Cart.objects.get_or_create(user=user)[0]
+    #     cart_lines = cart.cart_lines.all()
+    #     serializer = CartSerializer(cart_lines, many=True)
+    #     return Response(serializer.data)
+    def get_from_cart(self, request):
+        user = request.user
+        cart = Cart.objects.get_or_create(user=user)[0]
+        cart_lines = cart.cart_lines.all()
+        
+        # Serialize each cart line along with the product details
+        serialized_cart = []
+        for cart_line in cart_lines:
+            serialized_cart_line = {
+                'product': ProductSerializer(cart_line.product).data,  # Assuming you have a ProductSerializer
+                'quantity': cart_line.quantity
+            }
+            serialized_cart.append(serialized_cart_line)
 
+        return Response(serialized_cart)
     @action(detail=False, methods=["POST"], url_path="add-to-cart")
     def add_to_cart(self, request):
         user = request.user
@@ -73,6 +96,7 @@ class CartViewSet(viewsets.ModelViewSet):
             cart_line = CartLine.objects.create(
                 product=product, cart=cart, quantity=quantity
             )
-        return Response({"message": "Product added to cart"})
+        serializer=CartSerializer(cart_line)
+        return Response(serializer.data)
 
     # @action(detail=False, methods=["GET"], url_path="get-from-cart")
